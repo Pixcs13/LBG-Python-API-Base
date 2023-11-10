@@ -1,9 +1,6 @@
 """
 LBG learning-oriented CRUD-based RESTful API using standard Flask routing
 """
-if main =="__name__"
-	print "Hello"
-
 
 # import Flask microframework and associated tools
 from flask import Flask, request, jsonify
