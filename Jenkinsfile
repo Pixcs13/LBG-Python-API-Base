@@ -35,8 +35,8 @@
         stage('Deploy') {
             steps {
                 sh '''
-                scp nginx.conf jenkins@adam-deploy:/home/jenkins/nginx.conf
-                ssh jenkins@adam-deploy <<EOF
+                scp nginx.conf jenkins@maria-deploy:/home/jenkins/nginx.conf
+                ssh jenkins@maria-deploy <<EOF
                 export PORT=${PORT}
                 export VERSION=${BUILD_NUMBER}
                 docker stop lbg-api && echo "stopped" || echo "not running"
