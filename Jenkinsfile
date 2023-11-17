@@ -34,7 +34,7 @@ pipeline {
                 docker stop lbg-api && echo "Stopped lbg-api" || echo "lbg-api not running"
                 docker rm lbg-api && echo "removed lbg-api" || echo "lbg-api does not exist"
     
-                docker run -d -p 80:${PORT} -e PORT=${PORT} --name lbg-api pixcs13/lbg:${VERSION}
+                docker run -d -p 80:${PORT} -e PORT=${PORT} --name lbg-api pixcs13/lbg:2.0
                 '''
             }
 
