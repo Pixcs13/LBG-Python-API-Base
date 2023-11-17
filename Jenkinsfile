@@ -1,11 +1,14 @@
 pipeline {
     agent any
+    environment {
+        PORT = "8000"
+    }
     stages {
         stage('Build') {
             steps {
                 sh '''
-                docker build -t pixcs13/wk2-project .
-                docker build -t pixcs13/wk2-nginx nginx
+                docker build -t pixcs13/lbg:${BUILD_NUMBER} --build-arg PORT=${PORT} .
+                docker tag pixcs13/lbg:${BUILD_NUMBER} pixcs13/lbg:latest
                 '''
             }
 
@@ -13,8 +16,10 @@ pipeline {
         stage('Push') {
             steps {
                 sh '''
-                docker push pixcs13/wk2-project
-                docker push pixcs13/wk2-nginx
+                docker push pixcs13/lbg:${BUILD_NUMBER}
+                docker push pixcs13/lbg:latest
+                docker rmi pixcs13/lbg:${BUILD_NUMBER}
+                docker rmi pixcs13/lbg:latest
                 '''
             }
 
@@ -22,17 +27,14 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                ssh jenkins@maria-deploy2 <<EOF
-                docker pull pixcs13/wk2-project
-                docker pull pixcs13/wk2-nginx
-                docker stop wk2-app && echo "Stopped wk2-app" || echo "wk2-app not running"
-                docker rm wk2-app && echo "removed wk2-app" || echo "wk2-app does not exist"
-                docker stop wk2-nginx && echo "Stopped nginx" || echo "nginx not running"
-                docker rm wk2-nginx && echo "removed nginx" || echo "nginx does not exist"
-                docker network rm wk2-net && echo "removed network" || echo "network already removed"
-                docker network create wk2-net
-                docker run -d --name wk2-app --network wk2-net pixcs13/wk2-project
-                docker run -d --name wk2-nginx --network wk2-net -p 80:80 pixcs13/wk2-nginx
+                ssh jenkins@maria-deploy <<EOF
+                export PORT=${PORT}
+                export VERSION=${BUILD}
+
+                docker stop lbg-api && echo "Stopped lbg-api" || echo "lbg-api not running"
+                docker rm lbg-api && echo "removed lbg-api" || echo "lbg-api does not exist"
+    
+                docker run -d -p 80:${PORT} -e PORT=${PORT} --name lbg-api pixcs13/lbg:${VERSION}
                 '''
             }
 
