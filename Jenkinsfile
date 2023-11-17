@@ -1,4 +1,4 @@
-pipeline {
+    pipeline {
     agent any
     environment {
         PORT = "8000"
@@ -9,35 +9,45 @@ pipeline {
                 sh '''
                 docker build -t pixcs13/lbg:${BUILD_NUMBER} --build-arg PORT=${PORT} .
                 docker tag pixcs13/lbg:${BUILD_NUMBER} pixcs13/lbg:latest
-                '''
-            }
-
-        }
-        stage('Push') {
-            steps {
-                sh '''
                 docker push pixcs13/lbg:${BUILD_NUMBER}
                 docker push pixcs13/lbg:latest
                 docker rmi pixcs13/lbg:${BUILD_NUMBER}
                 docker rmi pixcs13/lbg:latest
                 '''
+           }
+        }
+        stage("generate nginx.conf") {
+            steps {
+                sh '''
+                cat - > nginx.conf <<EOF
+                events {}
+                http {
+                    server {
+                        listen 80;
+                        location / {
+                            proxy_pass http://lbg-api:${PORT};
+                        }
+                    }
+                }
+                '''
             }
-
         }
         stage('Deploy') {
             steps {
                 sh '''
-                ssh jenkins@maria-deploy <<EOF
+                scp nginx.conf jenkins@adam-deploy:/home/jenkins/nginx.conf
+                ssh jenkins@adam-deploy <<EOF
                 export PORT=${PORT}
-                export VERSION=${BUILD}
-
-                docker stop lbg-api && echo "Stopped lbg-api" || echo "lbg-api not running"
-                docker rm lbg-api && echo "removed lbg-api" || echo "lbg-api does not exist"
-    
-                docker run -d -p 80:${PORT} -e PORT=${PORT} --name lbg-api pixcs13/lbg:2
+                export VERSION=${BUILD_NUMBER}
+                docker stop lbg-api && echo "stopped" || echo "not running"
+                docker rm lbg-api && echo "removed" || echo "already removed"
+                docker stop nginx && echo "stopped" || echo "not running"
+                docker rm nginx && echo "removed" || echo "already removed"
+                docker network inspect proj && echo "network exists" || docker network create proj
+                docker run -d -e PORT=${PORT} --name lbg-api --network proj pixcs13/lbg:3
+                docker run -d -p 80:80 --name nginx --network proj --mount type=bind,source=/home/jenkins/nginx.conf,target=/etc/nginx/nginx.conf nginx:alpine
                 '''
             }
-
         }
-
     }
+}
