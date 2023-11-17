@@ -39,12 +39,14 @@
                 ssh jenkins@maria-deploy <<EOF
                 export PORT=${PORT}
                 export VERSION=${BUILD_NUMBER}
+                docker pull pixcs13/lbg:${BUILD_NUMBER}
+                docker pull pixcs13/lbg:latest
                 docker stop lbg-api && echo "stopped" || echo "not running"
                 docker rm lbg-api && echo "removed" || echo "already removed"
                 docker stop nginx && echo "stopped" || echo "not running"
                 docker rm nginx && echo "removed" || echo "already removed"
                 docker network inspect proj && echo "network exists" || docker network create proj
-                docker run -d -e PORT=${PORT} --name lbg-api --network proj pixcs13/lbg:3
+                docker run -d -e PORT=${PORT} --name lbg-api --network proj pixcs13/lbg
                 docker run -d -p 80:80 --name nginx --network proj --mount type=bind,source=/home/jenkins/nginx.conf,target=/etc/nginx/nginx.conf nginx:alpine
                 '''
             }
