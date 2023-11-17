@@ -22,6 +22,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
+                ssh jenkins@maria-deploy2 <<EOF
                 docker pull pixcs13/wk2-project
                 docker pull pixcs13/wk2-nginx
                 docker stop week2-app && echo "Stopped week2-app" || echo "week2-app not running"
