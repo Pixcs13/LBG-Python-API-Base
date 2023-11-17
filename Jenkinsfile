@@ -27,8 +27,8 @@ pipeline {
                 docker pull pixcs13/wk2-nginx
                 docker stop wk2-app && echo "Stopped wk2-app" || echo "wk2-app not running"
                 docker rm wk2-app && echo "removed wk2-app" || echo "wk2-app does not exist"
-                docker stop nginx && echo "Stopped nginx" || echo "nginx not running"
-                docker rm nginx && echo "removed nginx" || echo "nginx does not exist"
+                docker stop wk2-nginx && echo "Stopped nginx" || echo "nginx not running"
+                docker rm wk2-nginx && echo "removed nginx" || echo "nginx does not exist"
                 docker network rm wk2-net && echo "removed network" || echo "network already removed"
                 docker network create wk2-net
                 docker run -d --name wk2-app --network wk2-net pixcs13/wk2-project
