@@ -7,7 +7,7 @@
         PROJECT_ID = 'lbg-mea-15'
         CLUSTER_NAME = 'maria-cluster'
         LOCATION = 'europe-west2-c'
-        CREDENTIALS_ID = 'ed0dfaa3-c3ea-4136-9924-2db5b6230a1a'
+        CREDENTIALS_ID = '395ac141-1fff-40c7-b0ab-a9f3703b374c'
     }
     stages {
         stage('Build and Push to GCR') {
